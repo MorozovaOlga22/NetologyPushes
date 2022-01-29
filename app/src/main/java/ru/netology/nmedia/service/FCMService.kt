@@ -4,11 +4,15 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import ru.netology.nmedia.R
 import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.dto.PushMessage
+import kotlin.random.Random
 
 class FCMService : FirebaseMessagingService() {
     private val content = "content"
@@ -30,11 +34,37 @@ class FCMService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
-        // TODO: replace this in homework
-        println(message.data["content"])
+        val messageData = message.data["content"]
+        println(messageData)
+        val pushMessage = gson.fromJson(messageData, PushMessage::class.java)
+
+        val appAuthValue = AppAuth.getInstance().authStateFlow.value
+        if (pushMessage.recipientId == null || pushMessage.recipientId == appAuthValue.id) {
+            handleNotification(pushMessage.content)
+        } else {
+            AppAuth.getInstance().sendPushToken(appAuthValue.token)
+        }
     }
 
     override fun onNewToken(token: String) {
         AppAuth.getInstance().sendPushToken(token)
+    }
+
+    private fun handleNotification(contentText: String?) {
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle("Netology")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        if (contentText != null) {
+            notificationBuilder.setContentText(contentText)
+                .setStyle(
+                    NotificationCompat.BigTextStyle()
+                )
+        }
+
+        val notification = notificationBuilder.build()
+
+        NotificationManagerCompat.from(this)
+            .notify(Random.nextInt(100_000), notification)
     }
 }
