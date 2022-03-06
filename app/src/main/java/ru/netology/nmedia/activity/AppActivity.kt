@@ -12,12 +12,17 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.installations.FirebaseInstallations
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
+    @Inject
+    lateinit var auth: AppAuth
     private val viewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,17 +89,17 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         return when (item.itemId) {
             R.id.signin -> {
                 // TODO: just hardcode it, implementation must be in homework
-                AppAuth.getInstance().setAuth(5, "x-token")
+                auth.setAuth(5, "x-token")
                 true
             }
             R.id.signup -> {
                 // TODO: just hardcode it, implementation must be in homework
-                AppAuth.getInstance().setAuth(5, "x-token")
+                auth.setAuth(5, "x-token")
                 true
             }
             R.id.signout -> {
                 // TODO: just hardcode it, implementation must be in homework
-                AppAuth.getInstance().removeAuth()
+                auth.removeAuth()
                 true
             }
             else -> super.onOptionsItemSelected(item)
